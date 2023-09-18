@@ -71,9 +71,521 @@ public class Main {
         System.out.println("  p1  \t\t   p2  \t\t  p3  ");
     }
 
-    public static int solveMinimumSteps(int n) {
-        // Minimum number of steps for Towers of Hanoi problem
-        return (int) Math.pow(2, n) - 1;
+    public static int getBigger(Pilha p1) {
+        int max = 0;
+        if (p1.getCount() != 0) {
+            Node actual_p1 = p1.getFirst().getNext();
+            max = p1.getFirst().getData();
+
+            while (actual_p1 != null) {
+                if (actual_p1.getData() > max) {
+                    max = actual_p1.getData();
+                }
+                actual_p1 = actual_p1.getNext();
+            }
+            return max;
+
+        }
+        return -1;
+
+    }
+
+    public static int getSmaller(Pilha p1) {
+        int min = 0;
+        if (p1.getCount() != 0) {
+            Node actual_p1 = p1.getFirst().getNext();
+            min = p1.getFirst().getData();
+
+            while (actual_p1 != null) {
+                if (actual_p1.getData() < min) {
+                    min = actual_p1.getData();
+                }
+                actual_p1 = actual_p1.getNext();
+            }
+            return min;
+
+        }
+        return 101;
+
+    }
+
+    public static Pilha copy_pilha(Pilha p1, int size_pilhas, Boolean ascending) {
+        Node actual = p1.getFirst();
+        Pilha copy = new Pilha(size_pilhas, "copy");
+        while (actual != null) {
+            copy.push(actual.getData(), ascending);
+            actual = actual.getNext();
+        }
+
+        return copy;
+    }
+
+    public static Node getBefore(Pilha p, Node see_before) {
+        Node before = p.getFirst();
+        while (before.getNext() != see_before) {
+            before = before.getNext();
+        }
+        return before;
+    }
+
+    public static int resolverAuto(Pilha p1, Pilha p2, Pilha p3, boolean ascending, int size_pilhas) {
+        int steps = 0;
+        Pilha dest = new Pilha(size_pilhas, "dest");
+        if (ascending) {
+            int max_p1 = getBigger(p1);
+            int max_p2 = getBigger(p2);
+            int max_p3 = getBigger(p3);
+
+            int maxes[] = { max_p1, max_p2, max_p3 };
+            int max_everything = maxes[0];
+            for (int i = 1; i < 3; i++) {
+                if (max_everything < maxes[i]) {
+                    max_everything = maxes[i];
+                }
+
+            }
+            boolean need_put_max_first = p1.getFirst().getData() != max_everything;
+            if (!need_put_max_first) {
+                dest = p1;
+            }
+
+            while (p1.getTop().getData() != max_everything) {
+
+                if (p2.getCount() == 0 || p1.getTop().getData() <= p2.getTop().getData()) {
+
+                    p2.push(p1.pop().getData(), ascending);
+                    print_queues(p1, p2, p3, size_pilhas);
+                    steps++;
+                } else if (p3.getCount() == 0 || (p1.getTop().getData() <= p3.getTop().getData())) {
+
+                    p3.push(p1.pop().getData(), ascending);
+                    print_queues(p1, p2, p3, size_pilhas);
+                    steps++;
+                } else if (p2.getTop() != p2.getFirst() && p2.getTop().getData() <= p3.getTop().getData()
+                        && getBefore(p2, p2.getTop()).getData() <= p3.getTop().getData()) {
+
+                    p1.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p3.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p3.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                } else if (p2.getTop() != p2.getFirst() && p2.getTop().getData() <= p3.getTop().getData()
+                        && getBefore(p2, p2.getTop()).getData() >= p3.getTop().getData()) {
+
+                    p1.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p2.push(p3.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p2.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                } else if (p2.getTop().getData() <= p3.getTop().getData()) {
+
+                    p3.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                } else if (p3.getTop().getData() <= p2.getTop().getData()) {
+
+                    p2.push(p3.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                }
+            }
+
+            while (dest.getFirst() == null && dest.getCount() != 1) { //
+
+                if (p2.getCount() == 0) {
+                    p2.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    dest = p2;
+                } else if (p3.getCount() == 0) {
+                    p3.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    dest = p3;
+                } else if (p2.getTop() != p2.getFirst() && p2.getTop().getData() <= p3.getTop().getData()
+                        && getBefore(p2, p2.getTop()).getData() <= p3.getTop().getData()) {
+                    p1.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p3.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p3.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                } else if (p2.getTop() != p2.getFirst() && p2.getTop().getData() <= p3.getTop().getData()
+                        && getBefore(p2, p2.getTop()).getData() > p3.getTop().getData()) {
+
+                    p1.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p2.push(p3.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p2.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                }
+
+                else if (p2.getTop().getData() <= p3.getTop().getData()) {
+                    p3.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+
+                } else if (p3.getTop().getData() <= p2.getTop().getData()) {
+                    p2.push(p3.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+
+                }
+
+            }
+            int max_provisory = 0;
+            Pilha provisory = new Pilha(size_pilhas, "prov");
+            Pilha auxiliary = new Pilha(size_pilhas, "aux");
+            while (!dest.is_ordered(ascending) || dest.getCount() != size_pilhas) {
+                if (dest == p1) {
+                    max_p2 = getBigger(p2);
+                    max_p3 = getBigger(p3);
+                    if (max_p2 > max_p3) {
+                        max_provisory = max_p2;
+                        provisory = p2;
+                        auxiliary = p3;
+                    } else {
+                        max_provisory = max_p3;
+                        provisory = p3;
+                        auxiliary = p2;
+                    }
+                }
+                if (dest == p2) {
+                    max_p1 = getBigger(p1);
+                    max_p3 = getBigger(p3);
+                    if (max_p1 > max_p3) {
+                        max_provisory = max_p1;
+                        provisory = p1;
+                        auxiliary = p3;
+                    } else {
+                        max_provisory = max_p3;
+                        provisory = p3;
+                        auxiliary = p1;
+                    }
+                }
+                if (dest == p3) {
+                    max_p1 = getBigger(p1);
+                    max_p2 = getBigger(p2);
+                    if (max_p1 > max_p2) {
+                        max_provisory = max_p1;
+                        provisory = p1;
+                        auxiliary = p2;
+                    } else {
+                        max_provisory = max_p2;
+                        provisory = p2;
+                        auxiliary = p1;
+                    }
+
+                }
+                while (provisory.getCount() != 0 && provisory.getTop().getData() != max_provisory) {
+
+                    if (auxiliary.getCount() == 0) {
+
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                    } else if (provisory.getTop().getData() <= auxiliary.getTop().getData()) {
+
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                    }
+
+                    else if (auxiliary.getTop() != auxiliary.getFirst()
+                            && provisory.getTop().getData() >= auxiliary.getTop().getData()
+                            && getBefore(auxiliary, auxiliary.getTop()).getData() <= provisory.getTop().getData()) {
+
+                        dest.push(auxiliary.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                        auxiliary.push(dest.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                    } else if (auxiliary.getTop() != auxiliary.getFirst()
+                            && provisory.getTop().getData() >= auxiliary.getTop().getData()
+                            && provisory.getTop().getData() >= getBefore(auxiliary, auxiliary.getTop()).getData()) {
+
+                        dest.push(auxiliary.pop().getData(), ascending);
+                        steps++;
+                        print_queues(p1, p2, p3, size_pilhas);
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        steps++;
+                        print_queues(p1, p2, p3, size_pilhas);
+                        auxiliary.push(dest.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                    } else if (provisory.getTop().getData() >= auxiliary.getTop().getData()) {
+
+                        dest.push(auxiliary.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                        auxiliary.push(dest.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+
+                    }
+                }
+                if (provisory.getCount() != 0) {
+                    dest.push(provisory.pop().getData(), ascending);
+                    print_queues(p1, p2, p3, size_pilhas);
+                    steps++;
+                }
+
+            }
+
+        }
+
+        else {
+            int min_p1 = getSmaller(p1);
+
+            int min_p2 = getSmaller(p2);
+
+            int min_p3 = getSmaller(p3);
+
+            int mins[] = { min_p1, min_p2, min_p3 };
+            int min_everything = mins[0];
+            for (int i = 1; i < 3; i++) {
+                if (min_everything > mins[i]) {
+                    min_everything = mins[i];
+                }
+
+            }
+            boolean need_put_min_first = p1.getFirst().getData() != min_everything;
+            if (!need_put_min_first) {
+                dest = p1;
+            }
+
+            while (p1.getTop().getData() != min_everything) {
+
+                if (p2.getCount() == 0 || p1.getTop().getData() >= p2.getTop().getData()) {
+
+                    p2.push(p1.pop().getData(), ascending);
+                    print_queues(p1, p2, p3, size_pilhas);
+                    steps++;
+                } else if (p3.getCount() == 0 || (p1.getTop().getData() >= p3.getTop().getData())) {
+
+                    p3.push(p1.pop().getData(), ascending);
+                    print_queues(p1, p2, p3, size_pilhas);
+                    steps++;
+                } else if (p2.getTop() != p2.getFirst() && p2.getTop().getData() >= p3.getTop().getData()
+                        && getBefore(p2, p2.getTop()).getData() >= p3.getTop().getData()) {
+                    p1.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p3.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p3.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                } else if (p2.getTop() != p2.getFirst() && p2.getTop().getData() >= p3.getTop().getData()
+                        && getBefore(p2, p2.getTop()).getData() <= p3.getTop().getData()) {
+
+                    p1.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p2.push(p3.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p2.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                } else if (p2.getTop().getData() >= p3.getTop().getData()) {
+                    p3.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+
+                } else if (p3.getTop().getData() >= p2.getTop().getData()) {
+                    p2.push(p3.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                }
+            }
+
+            while (dest.getFirst() == null && dest.getCount() != 1) { //
+
+                if (p2.getCount() == 0) {
+                    p2.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    dest = p2;
+
+                } else if (p3.getCount() == 0) {
+                    p3.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    dest = p3;
+                } else if (p2.getTop() != p2.getFirst() && p2.getTop().getData() >= p3.getTop().getData()
+                        && getBefore(p2, p2.getTop()).getData() >= p3.getTop().getData()) {
+                    p1.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p3.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p3.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                } else if (p2.getTop() != p2.getFirst() && p2.getTop().getData() >= p3.getTop().getData()
+                        && getBefore(p2, p2.getTop()).getData() <= p3.getTop().getData()) {
+
+                    p1.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p2.push(p3.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                    p2.push(p1.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+                }
+
+                else if (p2.getTop().getData() >= p3.getTop().getData()) {
+                    p3.push(p2.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+
+                } else if (p3.getTop().getData() >= p2.getTop().getData()) {
+                    p2.push(p3.pop().getData(), ascending);
+                    steps++;
+                    print_queues(p1, p2, p3, size_pilhas);
+
+                }
+
+            }
+            int min_provisory = 0;
+            Pilha provisory = new Pilha(size_pilhas, "prov");
+            Pilha auxiliary = new Pilha(size_pilhas, "aux");
+            while (!dest.is_ordered(ascending) || dest.getCount() != size_pilhas) {
+
+                if (dest == p1) {
+                    min_p2 = getSmaller(p2);
+                    min_p3 = getSmaller(p3);
+                    if (min_p2 < min_p3) {
+                        min_provisory = min_p2;
+                        provisory = p2;
+                        auxiliary = p3;
+                    } else {
+                        min_provisory = min_p3;
+                        provisory = p3;
+                        auxiliary = p2;
+                    }
+                }
+                if (dest == p2) {
+                    min_p1 = getSmaller(p1);
+                    min_p3 = getSmaller(p3);
+                    if (min_p1 < min_p3) {
+                        min_provisory = min_p1;
+                        provisory = p1;
+                        auxiliary = p3;
+                    } else {
+                        min_provisory = min_p3;
+                        provisory = p3;
+                        auxiliary = p1;
+                    }
+                }
+                if (dest == p3) {
+                    min_p1 = getSmaller(p1);
+                    min_p2 = getSmaller(p2);
+                    if (min_p1 < min_p2) {
+                        min_provisory = min_p1;
+                        provisory = p1;
+                        auxiliary = p2;
+                    } else {
+                        min_provisory = min_p2;
+                        provisory = p2;
+                        auxiliary = p1;
+                    }
+
+                }
+                while (provisory.getCount() != 0 && provisory.getTop().getData() != min_provisory) {
+
+                    if (auxiliary.getCount() == 0) {
+
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                    }
+
+                    else if (provisory.getTop().getData() >= auxiliary.getTop().getData()) {
+
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                    }
+
+                    else if (auxiliary.getTop() != auxiliary.getFirst()
+                            && provisory.getTop().getData() <= auxiliary.getTop().getData()
+                            && getBefore(auxiliary, auxiliary.getTop()).getData() >= provisory.getTop().getData()) {
+
+                        dest.push(auxiliary.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                        auxiliary.push(dest.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                    } else if (auxiliary.getTop() != auxiliary.getFirst()
+                            && provisory.getTop().getData() <= auxiliary.getTop().getData()
+                            && provisory.getTop().getData() <= getBefore(auxiliary, auxiliary.getTop()).getData()) {
+
+                        dest.push(auxiliary.pop().getData(), ascending);
+                        steps++;
+                        print_queues(p1, p2, p3, size_pilhas);
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        steps++;
+                        print_queues(p1, p2, p3, size_pilhas);
+                        auxiliary.push(dest.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                    } else if (provisory.getTop().getData() <= auxiliary.getTop().getData()) {
+
+                        dest.push(auxiliary.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                        auxiliary.push(provisory.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+                        auxiliary.push(dest.pop().getData(), ascending);
+                        print_queues(p1, p2, p3, size_pilhas);
+                        steps++;
+
+                    }
+                }
+                if (provisory.getCount() != 0) {
+                    dest.push(provisory.pop().getData(), ascending);
+                    print_queues(p1, p2, p3, size_pilhas);
+                    steps++;
+                }
+
+            }
+
+        }
+
+        return steps;
     }
 
     public static void main(String[] args) {
@@ -85,10 +597,10 @@ public class Main {
         Scanner in = new Scanner(System.in);
         System.out.print("Bem vindo ao jogo, escolhe o tamanho das pilhas : ");
         size_pilhas = in.nextInt();
-        Pilha p1 = new Pilha(size_pilhas);
-        Pilha p2 = new Pilha(size_pilhas);
-        Pilha p3 = new Pilha(size_pilhas);
-        System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        Pilha p1 = new Pilha(size_pilhas, "p1");
+        Pilha p2 = new Pilha(size_pilhas, "p2");
+        Pilha p3 = new Pilha(size_pilhas, "p3");
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++");
         System.out.print("Ordem crescente (Y/N)? (caso digitou N sera decrescente) : ");
 
         String response = in.next();
@@ -130,8 +642,8 @@ public class Main {
                 break;
             }
             if (decision == 1) {
-                Pilha o = new Pilha(size_pilhas);
-                Pilha d = new Pilha(size_pilhas);
+                Pilha o = new Pilha(size_pilhas, "o");
+                Pilha d = new Pilha(size_pilhas, "d");
                 Node removed = new Node();
                 while (true) {
 
@@ -206,184 +718,13 @@ public class Main {
 
             }
             if (decision == 2) {
-
-                Pilha p1_1 = new Pilha(size_pilhas);
-                Pilha p2_1 = new Pilha(size_pilhas);
-                Pilha p3_1 = new Pilha(size_pilhas);
-                Node actual_p1 = p1.getFirst();
-                Node actual_p2 = p2.getFirst();
-                Node actual_p3 = p3.getFirst();
-                while (actual_p1 != null) {
-                    p1_1.push(actual_p1.getData(), ascending);
-                    actual_p1 = actual_p1.getNext();
-                }
-                while (actual_p2 != null) {
-                    p2_1.push(actual_p2.getData(), ascending);
-                    actual_p2 = actual_p2.getNext();
-                }
-                while (actual_p3 != null) {
-                    p3_1.push(actual_p3.getData(), ascending);
-                    actual_p3 = actual_p3.getNext();
-                }
-                int steps = played_rounds;
-
-                while (true) {
-                    Boolean isP1Null = p1_1.getCount() == 0;
-                    Boolean isP2Null = p2_1.getCount() == 0;
-                    Boolean isP3Null = p3_1.getCount() == 0;
-
-                    if ((p1_1.is_ordered(ascending) && p1_1.getCount() == size_pilhas)
-                            || (p2_1.is_ordered(ascending) && p2_1.getCount() == size_pilhas)
-                            || (p3_1.is_ordered(ascending) && p3_1.getCount() == size_pilhas)) {
-                        break;
-                    }
-                    if(size_pilhas == 3){
-                    if (!isP1Null && isP2Null && isP3Null) {
-                        p2_1.push(p1_1.pop().getData(), ascending);
-                        ++steps;
-                        print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                        System.out.println("Numero jogadas :" + steps);
-                        p3_1.push(p1_1.pop().getData(), ascending);
-                        ++steps;
-                        print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                        System.out.println("Numero jogadas :" + steps);
-
-                    } else if (isP1Null && !isP2Null && isP3Null) {
-                        p1_1.push(p2_1.pop().getData(), ascending);
-                        ++steps;
-                        print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                        System.out.println("Numero jogadas :" + steps);
-                        p3_1.push(p2_1.pop().getData(), ascending);
-                        ++steps;
-                        print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                        System.out.println("Numero jogadas :" + steps);
-                    } else if (isP1Null && isP2Null && !isP3Null) {
-                        p1_1.push(p3_1.pop().getData(), ascending);
-                        ++steps;
-                        print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                        System.out.println("Numero jogadas :" + steps);
-                        p2_1.push(p3_1.pop().getData(), ascending);
-                        ++steps;
-                        print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                        System.out.println("Numero jogadas :" + steps);
-                    }
-                    
-                    if (ascending) {
-                        Node top_p1 = p1_1.getTop();
-                        Node top_p2 = p2_1.getTop();
-                        Node top_p3 = p3_1.getTop();
-                        if (!isP1Null && !isP2Null && !isP3Null) {
-                            if (top_p1.getData() < top_p2.getData() && top_p2.getData() < top_p3.getData()) {
-                                p3_1.push(p2_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                                p3_1.push(p1_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-
-                            } else if (top_p2.getData() < top_p1.getData() && top_p1.getData() < top_p3.getData()) {
-                                p3_1.push(p1_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                                p3_1.push(p2_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-
-                            } else if (top_p3.getData() < top_p1.getData() && top_p1.getData() < top_p2.getData()) {
-                                p2_1.push(p1_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                                p2_1.push(p3_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                            } else if (top_p1.getData() < top_p3.getData() && top_p3.getData() < top_p2.getData()) {
-                                p2_1.push(p3_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                                p2_1.push(p1_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                            } else if (top_p3.getData() < top_p2.getData() && top_p2.getData() < top_p1.getData()) {
-                                p1_1.push(p2_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                                p1_1.push(p3_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                            } else if (top_p2.getData() < top_p3.getData() && top_p3.getData() < top_p1.getData()) {
-                                p1_1.push(p3_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                                p1_1.push(p2_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                                System.out.println("Numero jogadas :" + steps);
-                                
-                            }
-
-                        } else if (!isP1Null && !isP2Null && isP3Null) {
-                            if (p1_1.getCount() > p2_1.getCount()) {
-                                p3_1.push(p1_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                    System.out.println("Numero jogadas :" + steps);
-                            } else {
-                                p3_1.push(p2_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                    System.out.println("Numero jogadas :" + steps);
-
-                            }
-
-                        } else if (isP1Null && !isP2Null && !isP3Null) {
-                            if (p2_1.getCount() >= p3_1.getCount()) {
-                                p1_1.push(p2_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                    System.out.println("Numero jogadas :" + steps);
-                            } else {
-                                p1_1.push(p3_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                    System.out.println("Numero jogadas :" + steps);
-                            }
-                        } else if (!isP1Null && isP2Null && !isP3Null) {
-                            if (p1_1.getCount() >= p3_1.getCount()) {
-                                p2_1.push(p1_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                    System.out.println("Numero jogadas :" + steps);
-                            } else {
-                                p2_1.push(p3_1.pop().getData(), ascending);
-                                ++steps;
-                                print_queues(p1_1, p2_1, p3_1, size_pilhas);
-                    System.out.println("Numero jogadas :" + steps);
-                            }
-
-                        }
-                        System.out.println("+++++++++++++++++++++++++++");
-
-                    } else {
-
-
-                    }
-
-                    
-                }
-            }
+                played_rounds = resolverAuto(p1, p2, p3, ascending, size_pilhas);
+                System.out.println("Solved in  " + played_rounds + " steps .");
+                break;
 
             }
         }
+
+        in.close();
     }
 }

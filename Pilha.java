@@ -3,11 +3,16 @@ public class Pilha{
     private Node top;
     private int size;
     private  int count = 0;
-    public Pilha (int size){
+    private String name;
+    public Pilha (int size,String name){
         this.first = null;
         this.top = null;
         this.size = size;
+        this.name = name;
 
+    }
+    public String getName() {
+        return name;
     }
 
     public Node getFirst() {
